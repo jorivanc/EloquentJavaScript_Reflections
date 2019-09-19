@@ -20,6 +20,7 @@ Operators:
   * multiplication
   / division
   % module
+  i+=2, i-=2, i*=2, i++, i--
   typeof VAR will specified the type of the variable VAR
   condition ? true : false; conditional operator.
 
@@ -30,6 +31,43 @@ Operators:
     &&, ||, ! (logical negation)
 
 ------------------------------------------------------------------------------------------------------------------------
+
+Control Flow
+  Conditional:
+    if (expression) {
+      statement
+    } else if (){}
+    
+    expression? true: false;
+    
+    switch(value){
+      case "one": 
+        console.log("something less than 3");
+      case "two": 
+        console.log("something less than 3");
+        break;                                    will evaluate case "two" even though case "one" was evaluated because there is not a break clause
+      default: 
+        console.log("something bigger than 3");
+        break;
+    }
+    
+  Loops:
+    for(let i=0; i<10; i++){
+      if (expression_1) break;          // break will terminate the 'for' and jump out of the loop
+      if (expression_2) continue;       // continue will jump to the next iteration
+      console.log(i);
+    }
+    
+   let yourName; 
+   do{
+    yourName = prompt("enter your name");
+   }while(!yourName);
+    
+   let counter = 1; 
+   while(counter < 10){
+    console.log(counter++);
+   }
+    
 
 
 
