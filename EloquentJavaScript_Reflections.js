@@ -32,42 +32,52 @@ Operators:
 
 ------------------------------------------------------------------------------------------------------------------------
 
+Bindings
+  var (pre-2015), let, const (useful for binding that give a name to a value i.e [const ONE = 1;])
+  let x = 1, y =2;
+
+  Casting:
+    Number("100"); //returns the number 100 not the string "100", Number("") = 0, Number(true) = 1, Number(false || null) = 0
+    String(Object)   or    Object.toString()
+    Boolean()    Symbol()
+
 Control Flow
   Conditional:
     if (expression) {
       statement
-    } else if (){}
-    
+    } else if (){
+  }else { }
+
     expression? true: false;
-    
+
     switch(value){
-      case "one": 
+      case "one":
         console.log("something less than 3");
-      case "two": 
+      case "two":
         console.log("something less than 3");
         break;                                    will evaluate case "two" even though case "one" was evaluated because there is not a break clause
-      default: 
+      default:
         console.log("something bigger than 3");
         break;
     }
-    
+
   Loops:
     for(let i=0; i<10; i++){
       if (expression_1) break;          // break will terminate the 'for' and jump out of the loop
       if (expression_2) continue;       // continue will jump to the next iteration
       console.log(i);
     }
-    
-   let yourName; 
+
+   let yourName;
    do{
     yourName = prompt("enter your name");
-   }while(!yourName);
-    
-   let counter = 1; 
+  }while(!yourName); console.log(yourName)
+
+   let counter = 1;
    while(counter < 10){
     console.log(counter++);
    }
-    
+
 
 
 
