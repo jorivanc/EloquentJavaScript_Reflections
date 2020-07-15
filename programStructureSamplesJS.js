@@ -53,3 +53,63 @@ When you have a program that generates this pattern, define a binding size = 8 a
 // board+="\n";
 //}
 //console.log(board);
+
+/*
+EXERCISE #4
+Write a function min that takes two arguments and returns their minimum.
+*/
+
+//function min(x,y){
+//    return (x<y?x:y)
+//}
+//console.log(min(0,10));
+//console.log(min(0,-10));
+
+/*
+EXERCISE #5
+-Zero is even.
+-One is odd.
+-For any other number N, its evenness is the same as N - 2.
+Define a recursive function isEven corresponding to this description. The function should accept a single parameter (a positive,
+whole number) and return a Boolean.
+Test it on 50 and 75. See how it behaves on -1. Why? Can you think of a way to fix this?
+*/
+
+// function isEven(num){
+//     if (num == 0) return true;
+//     else if (num == 1) return false;
+//     else if (num < 0) return isEven(-num);
+//     else return isEven(num - 2);
+// }
+// console.log(isEven(50));
+// console.log(isEven(75));
+// console.log(isEven(-10));
+
+/*
+EXERCISE #6
+Write a function countBs that takes a string as its only argument and returns a number that indicates how many uppercase “B” characters there are in the string.
+Next, write a function called countChar that behaves like countBs, except it takes a second argument that indicates the character that is to be counted (rather than counting only uppercase “B” characters). Rewrite countBs to make use of this new function.
+*/
+// function countBs(str){
+//     let counter = 0;
+//     for(let i = 0; i< str.length ; i++){
+//         if (str[i] == "B")
+//             counter++;
+//     }
+//     return counter;
+// }
+// console.log(countBs("BBCbBB"));
+
+// function countChar(str,char){
+//     let counter = 0;
+//     for(let i = 0; i<str.length; i++){
+//         if(str[i]==char)
+//             counter++;
+//     }
+//     return counter;
+// }
+// console.log(countChar("kakkerlakkK", "k"));
+
+/*
+EXERCISE #7
+*/
