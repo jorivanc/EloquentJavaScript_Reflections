@@ -112,4 +112,122 @@ Next, write a function called countChar that behaves like countBs, except it tak
 
 /*
 EXERCISE #7
+Write a range function that takes two arguments, start and end, and returns an array containing all the numbers from start up to (and including) end.
+Next, write a sum function that takes an array of numbers and returns the sum of these numbers. Run the example program and see whether it does indeed return 55.
+As a bonus assignment, modify your range function to take an optional third argument that indicates the “step” value used when building the array. If no step is given, the elements go up by increments of one, corresponding to the old behavior
 */
+// function range(st,end,step= st < end ? 1 : -1 ){
+//     let array = [];
+//     if (step>0){
+//         for(let i=st; i<=end; i+=step) array.push(i);
+//     } else {
+//         for(let i=st; i>=end; i+=step) array.push(i);
+//     }
+//     return array;
+// }
+// function sum(array){
+//     let s = 0;
+//     for (let num of array){
+//         s += num;
+//     }
+//     return s;
+// }
+// console.log(range(1, 10));          // → [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+// console.log(range(5, 2, -1));       // → [5, 4, 3, 2]
+// console.log(sum(range(1, 10)));     // → 55
+
+/*
+EXERCISE #8
+For this exercise, write two functions, reverseArray and reverseArrayInPlace.
+The first, reverseArray, takes an array as argument and produces a new array that has the same elements in the inverse order.
+The second, reverseArrayInPlace, does what the reverse method does: it modifies the array given as argument by reversing its elements.
+*/
+// function reverseArray(array){
+//     let newArray = [];
+//     for (let element of array) newArray.unshift(element);
+//     return newArray;
+// }
+// function reverseArrayInPlace(array){
+//     for(let i=0; i<Math.floor(array.length/2); i++){
+//         let temp = array[array.length-1-i];
+//         array[array.length-1-i]=array[i];
+//         array[i]=temp;
+//     }
+//     return array;
+// }
+// console.log(reverseArray(["A", "B", "C"]));         // → ["C", "B", "A"];
+// let arrayValue = [1, 2, 3, 4, 5];
+// reverseArrayInPlace(arrayValue);
+// console.log(arrayValue);                            // → [5, 4, 3, 2, 1]
+
+/*
+EXERCISE #9
+let list = {
+  value: 1,
+  rest: {
+    value: 2,
+    rest: {
+      value: 3,
+      rest: null
+    }
+  }
+};
+Write a function arrayToList that builds up a list structure like the one shown when given [1, 2, 3] as argument.
+Also write a listToArray function that produces an array from a list.
+Then add a helper function prepend, which takes an element and a list and creates a new list that adds the element to the front of the input list, and nth, which takes a list and a number and returns the element at the given position in the list (with zero referring to the first element) or undefined when there is no such element.
+*/
+// function arrayToList(array){
+//     let list = null;
+//     for(let i = array.length-1; i>=0 ; i--){
+//         list = {value: array[i], rest: list};
+//     }
+//     return list;
+// }
+// function listToArray(list){
+//     let array = [];
+//     for(let node=list; node ; node=node.rest){
+//         array.push(node.value);
+//     }
+//     return array;
+// }
+// function prepend(value,list){
+//     return {value, rest:list};
+// }
+// function nth(list,n){
+//     let element = undefined;
+//     let node = list;
+//     for(let i = 0; i<=n ; i++){
+//         if (node.rest==null && i!=n) return undefined;   //it reached the last node (and i!=n) so there are less than n nodes which means it doesnt exist.
+//         element = node.value;
+//         node = node.rest;
+//     }
+//     return element;
+// }
+// function nthRecursive(list,n){
+//     if(!list) return undefined;
+//     else if(n==0) return list.value;
+//     else return nthRecursive(list.rest,n-1);
+// }
+// console.log(arrayToList([10, 20]));                     // → {value: 10, rest: {value: 20, rest: null}}
+// console.log(listToArray(arrayToList([10, 20, 30])));    // → [10, 20, 30]
+// console.log(prepend(10, prepend(20, null)));            // → {value: 10, rest: {value: 20, rest: null}}
+// console.log(nth(arrayToList([10, 20, 30]), 4));         // → undefined
+// console.log(nthRecursive(arrayToList([10, 20, 30]), 0));// → 10
+/*
+EXERCISE #10
+Write a function deepEqual that takes two values and returns true only if they are the same value or are objects with the same properties, where the values of the properties are equal when compared with a recursive call to deepEqual
+*/
+// function deepEqual(a,b){
+//     if(a===b) return true;
+//     if(a==null || typeof a!="object" || b==null || typeof b!="object") return false;
+//     let keysA = Object.keys(a), keysB=Object.keys(b);
+//     if(keysA.length != keysB.length) return false;
+//     for(let key of keysA){
+//         if(!keysB.includes(key) || !deepEqual(a[key],b[key])) return false;
+//     }
+//     return true;
+// }
+// let obj = {here: {is: "an"}, object: 2};
+// console.log(deepEqual(obj, obj));                           // → true
+// console.log(deepEqual(obj, {here: 1, object: 2}));          // → false
+// console.log(deepEqual(obj, {here: {is: "an"}, object: 2})); // → true
