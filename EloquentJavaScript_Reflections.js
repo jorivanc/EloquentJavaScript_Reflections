@@ -150,10 +150,12 @@ function remove(array, index) {
     .concat(array.slice(index + 1));
 }
 console.log(remove(["a", "b", "c", "d", "e"], 2));
-// → ["a", "b", "d", "e"]  concat glue arrays together.  if concat argument is not an array that element will be added to the array as a one-element-array.
+// → ["a", "b", "d", "e"]
+concat glue arrays together.  if concat argument is not an array that element will be added to the array as a one-element-array.
 
 listOfNumber.includes(8)  //true   checks whether a given value exists in the array
 Array loops:
+for-of
     for (let i = 0; i < JOURNAL.length; i++) {                      for (let entry of JOURNAL) {
         let entry = JOURNAL[i];                         ===             console.log(`${entry.events.length} events.`);
         // Do something with entry                                   }
@@ -243,16 +245,48 @@ let string = JSON.stringify({squirrel: false,
                             events: ["weekend"]});      creates a string with valid JSON
 console.log(string);                                    // {"squirrel":false,"events":["weekend"]}
 console.log(JSON.parse(string).events);                 // ["weekend"]                                  returns as an object or array
+------------------------------------------------------------------------------------------------------------------------
 
+Higher Order Functions
+HOF are function that operate on other functions either as arguments or by returning them.(very useful for data processing)
 
+HOF standard array methods
+Arrays HOF methods:
+findIndex:      returns the position(index) of the first element in the array that satisfies functionTest    array.findIndex(functionTest);
+some:           returns a boolean if at leas one element of the array passes functionTest   array.some(functionTest(element){});
+forEach:        array.forEach(function);        (does not return anything) is an array built-in fucntion that provides something like for-of as a HOF   (i.e  ["A", "B"].forEach(l => console.log(l));)    code unit 16 bits same as length method and accessing with string[1] or string.charCodeAt(position != (string.codePointAt(position)) or for-of) both use 2 units
+filter:         array.filter(functionTest);     returns a new array with the elements that passed the functionTest
+map:            array.map(transformFunction);   returns a new array after applying the transformFunction to all the elements of the original array
+reduce:         array.reduce(reducerFunction, intialValue);   returns a single output value after executing a reducerFunction on each element
+                reducerFunction(accumulator,currentElement){...}
+                examples:
+                let scores = [90,30,20,75,85,95,0,55];
+                let total = scores.reduce((accumulator,element) => accumulator+element,0);   //typical use of reduce.
+                let minMax = scores.reduce((acc,score)=> [Math.min(acc[0],score), Math.max(acc[1],score)] ,[Infinity,0]);    //reduce can return a different type of value inthis case [min,max]
 
-
+                const students = [
+                    {userid:'stevenh',
+                    name:'steve',
+                    passFail:true
+                    },
+                    {userid:'debbw',
+                    name:'deb',             //we want to access an object using the userid: studentsObj.debbw = {Object with debbw info}
+                    passFail:true
+                    },
+                    {userid:'maxv',
+                    name:'Max',
+                    passFail:false
+                    }
+                ];
+                let studentsObj = students.reduce(function(acc,person){
+                return {...acc, [person.userid]: person}
+            },{});
 
 
 
 
 SEARCH
-    for-in / for-of difference
+    difference between for-in (loop over properties names in Objects or "0" , "1", ... in arrays) / for-of  (loop over values)
     .reduce function Javascript
     destructuring
 
