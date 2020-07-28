@@ -334,3 +334,101 @@ The characterScript and countBy functions defined earlier in the chapter are pro
 // }
 // console.log(dominantDirection("Hello!"));               // → ltr
 // console.log(dominantDirection("Hey, مساء الخير"));      // → rtl
+
+/*
+EXERCISE #15
+Write a class Vec that represents a vector in two-dimensional space. It takes x and y parameters (numbers), which it should save to properties of the same name.
+Give the Vec prototype two methods, plus and minus, that take another vector as a parameter and return a new vector that has the sum or difference of the two vectors’ (this and the parameter) x and y values.
+Add a getter property length to the prototype that computes the length of the vector—that is, the distance of the point (x, y) from the origin (0, 0).
+*/
+// class Vec{
+//     constructor(x,y){
+//         this.x = x;
+//         this.y = y;
+//     }
+//     plus(vector){
+//         return new Vec(vector.x+this.x, vector.y+this.y);
+//     }
+//     minus(vector){
+//         return new Vec(this.x-vector.x, this.y-vector.y);
+//     }
+//     get length(){
+//         return Math.sqrt(Math.pow(this.x,2)+Math.pow(this.y,2));
+//     }
+// }
+// console.log(new Vec(1, 2).plus(new Vec(2, 3)));     // → Vec{x: 3, y: 5}
+// console.log(new Vec(1, 2).minus(new Vec(2, 3)));    // → Vec{x: -1, y: -1}
+// console.log(new Vec(3, 4).length);                  // → 5
+
+/*
+EXERCISE #16
+Write a class called Group (since Set is already taken). Like Set, it has add, delete, and has methods.
+Its constructor creates an empty group, add adds a value to the group (but only if it isn’t already a member), delete removes its argument from the group (if it was a member), and has returns a Boolean value indicating whether its argument is a member of the group.
+Use the === operator, or something equivalent such as indexOf, to determine whether two values are the same.
+Give the class a static from method that takes an iterable object as argument and creates a group that contains all the values produced by iterating over it.
+*/
+
+// class Group {
+//   constructor(){
+//       this.members = [];
+//   }
+//   add(value){
+//        if(!this.members.includes(value))   //if (!this.has(value))
+//         this.members.push(value);
+//   }
+//   delete(value){
+//       if(this.members.includes(value)){
+//           this.members.splice(this.members.indexOf(value),1);   //this.group = this.group.filter(v => v !== value);
+//       }
+//   }
+//   has(value){
+//       return this.members.includes(value);
+//   }
+//   static from(iterObj){
+//       let group = new Group();
+//       for(let element of iterObj){
+//           group.add(element);
+//       }
+//       return group;
+//   }
+//   get printGroup(){
+//       console.log(this.members.toString());
+//   }
+// }
+// let group = Group.from([10, 20]);
+// group.printGroup;
+// console.log(group.has(10)); // → true
+// console.log(group.has(30)); // → false
+// group.add(10);
+// group.delete(10);
+// console.log(group.has(10)); // → false
+
+/*
+EXERCISE #17
+Make the Group class from the previous exercise iterable. (to run, uncomment EXERCISE #16)
+*/
+// class GroupIterator{
+//     constructor(group){
+//         this.pos = 0;
+//         this.group = group;
+//     }
+//     next(){
+//         if(this.pos >= this.group.members.length)   return {done:true};
+//         return {value: this.group.members[this.pos++], done:false}
+//     }
+// }
+// Group.prototype[Symbol.iterator] = function(){
+//     return new GroupIterator(this);
+// };
+// for (let value of Group.from(["a", "b", "c"])) {
+//   console.log(value);
+// } // → a // → b // → c
+
+/*
+EXERCISE #18
+Can you think of a way to call hasOwnProperty on an object that has its own property by that name?
+*/
+// let map = {one: true, two: true, hasOwnProperty: true};
+// // Fix this call
+// // console.log(map.hasOwnProperty("one"));
+// console.log(Object.prototype.hasOwnProperty.call(map,"one"));   // → true

@@ -187,9 +187,10 @@ Creating objects:
     };
 
 to add properties or replace values of already existing properties in objects we can:   day1.wolf = false;
-the in operator tells if an object has a property of that name. :       console.log("squirrel" in day1);   //true
-to find the keys or properties of an object use:          Object.keys(OBJECT);   //["key1","key2",...,"keyN",]
-to copy all properties (or replace if already exist) of an ObjectB to an Object A use:    Object.assign(objectA, objectB);
+the 'in' operator tells if an object has a property of that name. :                     console.log("squirrel" in day1);   //true
+hasOwnPropertyis an alternative for 'in' operator: (ignores the object prototype)       day1.hasOwnProperty("squirrel");   //true
+to find the keys or properties of an object (not in the prototype):                     Object.keys(OBJECT);   //["key1","key2",...,"keyN",]
+to copy all properties (or replace if already exist) of an ObjectB to an Object A use:  Object.assign(objectA, objectB);
 When you compare objects with JavaScript’s == operator, it compares by identity: it will produce true only if both objects are precisely the same value. Comparing different objects will return false, even if they have identical properties.
 
 if a property name in brace notation isn’t followed by a value i.e{events:events, becameASquirrel:squirrel}, its value is taken from the binding with the same name.
@@ -281,14 +282,142 @@ reduce:         array.reduce(reducerFunction, intialValue);   returns a single o
                 let studentsObj = students.reduce(function(acc,person){
                 return {...acc, [person.userid]: person}
             },{});
+            ------------------------------------------------------------------------------------------------------------------------
 
+The Secret Life Of objects
+This:
+        When a function is called as a method—looked up as a property and immediately called, as in object.method()—the binding called this in its body automatically points at the object that it was called on.
+call:   Think of "this" as an extra parameter that is passed in a different way. If you want to pass it explicitly, you can use a function’s "call" method, which takes the this value as its first argument and treats further arguments as normal parameters. method.call(thisDesiredObject,methodParameters);
+        speak.call(hungryRabbit, "Burp!");     where function speak(str){console.log(str);}    and     hungryRabbit = {type: "hungry", speak};
+        Arrow functions do not bind their own 'this' but can see the 'this' binding of the scope around them
+            function normalize() {
+                             \/------------------------| reference to the surrounding scope
+                console.log(this.coords.map(n => n / this.length));
+            }
+            normalize.call({coords: [0, 2, 3], length: 5});         // → [0, 0.4, 0.6]
+Prototype:
 
+Object.prototype is at the root of tree-shapped structure. it provides a few methods that show up in all object such as object.toString(); (only constructor functions have a .property, INSTANCES DO NOT have a .prototype they have a __proto__)
+Functions derive from Function.prototype, and arrays derive from Array.prototype.
+getPrototypeOf:     returns the prototype of an object. Object.getPrototypeOf(object);  (if object = {} then // Object.prototype  == {})
+setPrototypeOf:     sets a prototype of an object. (use create instead) Object.setPrototypeOf(object, prototypeObject);
+creating objects
+create:             You can use Object.create to create an object with a specific prototype. let newObject = Object.create(prototypeObject);
+                    let newObj = {
+                        property1: value1,
+                        property2: value2,
+                        method1(){ method1Body},                        //shorthand way of defining a method
+                        method2: function(paramMethod2){ method2Body}
+                    }
 
+                    let newObj = new Object();  // create and object with Object constructor and then add properties and methods
+                    newObj.property1 = value1;
+                    newObj.method1 = function(){}
+
+                    function objConstructor(paramConstructor){
+                        this.property1 = value1;
+                        this.property2 = value2;                        this properties will be directly on the object constructor not on the prototype
+                        this.method1 = function(){};
+                    }
+                    let newObj = new objConstructor(paramConstructor)
+
+Classes: (function declarations are hoisted (can be declared after being used, classes declarations are NOT))
+a class defines the shape of a type of object. the constructor makes sure the instances derived from the class have defined their own properties and the proper prototype assigned.
+    function makeRabbit(type) {
+        let rabbit = Object.create(protoRabbit);
+        rabbit.type = type;
+        return rabbit;
+    }
+Class Notation: (methods and only methods will be added to the prototype during class declaration (they can be added later), the constructor will have a special treatment)
+    class Rabbit {
+      constructor(type) {
+        this.type = type;
+      }
+      speak(line) {
+        console.log(`The ${this.type} rabbit says '${line}'`);
+      }
+    }
+    let killerRabbit = new Rabbit("killer");
+
+Constructor: (constructor names are Capitalized.   constructors prototype = Function.prototype.    instances prototype = constructor.protottype)
+using NEW in front of a function will treat the function as a constructor (This means that an object with the right prototype is automatically created, bound to this in the function, and returned at the end of the function.)
+    function Rabbit(type) {
+        this.type = type;
+        }
+        Rabbit.prototype.speak = function(line) {
+        console.log(`The ${this.type} rabbit says '${line}'`);
+    };
+    let weirdRabbit = new Rabbit("weird");
+
+Map: (use for-of to return an array [key, value]) some methods of map: get(key), has(key), set(key,value), delete(key)
+is dangerous using objects as maps i.e let objMap = { pedro: 35}; be careful because ("toString" in objMap) == true
+posible solutions:
+- create an object without a prototype:     let newObj = Object.create(null)
+- create a Map: (allows any type of keys)   let newObj = new Map();     newObj.set("pedro",39);   newObj["pedro"] = 39;
+
+Symbols: symbols are unique and can be used as property names (pair symbol as property, value will not be displayed with for-in loop, also will be ignored with JSON.stringify) always use saque braquets when using symbols as property name
+let sym = Symbol("name");               //The string you pass to Symbol is included when you convert it to a string with sym.toString()
+console.log(sym == Symbol("name"));     // → false
+Rabbit.prototype[sym] = 55;
+console.log(blackRabbit[sym]);          // → 55
+
+Iterator:
+if an object is iterable then it means that it has a method named with the Symbol.iterator symbol. when called, that method should return an object that provides a second interface, 'iterator'. This is the actual thing that iterates. It has a next method that returns the next result. That result should be an object with a value property that provides the next value, if there is one, and a done property, which should be true when there are no more results and false otherwise
+    let okIterator = "OK"[Symbol.iterator]();
+    console.log(okIterator.next());             // → {value: "O", done: false}
+    console.log(okIterator.next());             // → {value: "K", done: false}
+    console.log(okIterator.next());             // → {value: undefined, done: true}
+
+Getters:
+properties that are accessed directly may hide a method call. Such methods are called getters.
+let varyingSize = {
+  get size() {
+    return Math.floor(Math.random() * 100);
+  }
+};
+console.log(varyingSize.size);      // → 73    its called as a property not as a method
+
+Setter:
+change or mutate properties
+    const person = {
+        firstName : "jorge",
+        lastName : "castano",
+        get fullName(){
+            return `${this.firstName} ${this.lastName}`;
+        },
+        set fullName(value){
+            let [first,last] = value.split(" ");
+            this.firstName = first;
+            this.lastName = last;
+        }
+    }
+    console.log(person.fullName);               //jorge castano
+    person.fullName = "carlos ramirez";
+    console.log(person.fullName);               //carlos ramirez
+
+Static: does not require an instance to be create in order to be used. it needs to be called directly on the class i.e Console.log() or Math.random() usually utility functions
+
+Inheritance:
+    class SubClass extends SuperClass{
+        constructor(arguments){
+            super(arguments){...
+            }
+        }
+        methodToModify(arguments){//this will override the old method
+            super.methodToModify();
+        }
+    }
+
+instanceOf:     let you know if an object is derived from a specific class. i.e console.log([1] instanceof Array);      // → true
 
 SEARCH
-    difference between for-in (loop over properties names in Objects or "0" , "1", ... in arrays) / for-of  (loop over values)
-    .reduce function Javascript
-    destructuring
+    - difference between for-in (loop over properties names in Objects or "0" , "1", ... in arrays) / for-of (loop over values) mostly used for arrays. the object is expected to be 'iterable'
+    - DEBUGGING javascript
+    - interfaces javascript
+    - .reduce function Javascript
+    - destructuring
+    - new javascrip class (is a just function?)
+    - Objects private variables (using # still in proposal?)
 
 Notes:
 
