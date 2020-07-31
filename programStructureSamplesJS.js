@@ -432,3 +432,263 @@ Can you think of a way to call hasOwnProperty on an object that has its own prop
 // // Fix this call
 // // console.log(map.hasOwnProperty("one"));
 // console.log(Object.prototype.hasOwnProperty.call(map,"one"));   // → true
+
+
+/*
+PROJECT ROBOT
+*/
+//  Meadowfield: The village of Meadowfield isn’t very big. It consists of 11 places with 14 roads between them. It can be described with this array of roads:
+// const roads = [
+//   "Alice's House-Bob's House",   "Alice's House-Cabin",
+//   "Alice's House-Post Office",   "Bob's House-Town Hall",
+//   "Daria's House-Ernie's House", "Daria's House-Town Hall",
+//   "Ernie's House-Grete's House", "Grete's House-Farm",
+//   "Grete's House-Shop",          "Marketplace-Farm",
+//   "Marketplace-Post Office",     "Marketplace-Shop",
+//   "Marketplace-Town Hall",       "Shop-Town Hall"
+// ];
+//
+// //  The network of roads in the village forms a graph. Let’s convert the list of roads to a data structure that, for each place, tells us what can be reached from there.
+// function buildGraph(edges) {
+//   let graph = Object.create(null);
+//   function addEdge(from, to) {
+//     if (graph[from] == null) {
+//       graph[from] = [to];
+//     } else {
+//       graph[from].push(to);
+//     }
+//   }
+//   for (let [from, to] of edges.map(r => r.split("-"))) {
+//     addEdge(from, to);
+//     addEdge(to, from);
+//   }
+//   return graph;
+// }
+// const roadGraph = buildGraph(roads);
+
+/*  The task: Our robot will be moving around the village.
+There are parcels in various places, each addressed to some other place.
+The robot picks up parcels when it comes to them and delivers them when it arrives at their destinations
+Let’s condense the village’s state down to the minimal set of values that define it. There’s the robot’s current location and the collection of undelivered parcels, each of which has a current location and a destination address
+*/
+// class VillageState {
+//   constructor(place, parcels) {
+//     this.place = place;
+//     this.parcels = parcels;
+//   }
+//
+//   move(destination) {                                     //It first checks whether there is a road going from the current place to the destination, and if not, it returns the old state since this is not a valid move
+//     if (!roadGraph[this.place].includes(destination)) {
+//       return this;
+//     } else {
+//       let parcels = this.parcels.map(p => {               //The call to map takes care of the moving
+//         if (p.place != this.place) return p;
+//         return {place: destination, address: p.address};
+//     }).filter(p => p.place != p.address);                 //the call to filter does the delivering
+//       return new VillageState(destination, parcels);
+//     }
+//   }
+// }
+
+// usage sample
+// let first = new VillageState(
+//   "Post Office",
+//   [{place: "Post Office", address: "Alice's House"}]
+// );
+// let next = first.move("Alice's House");
+// console.log(next.place);    // → Alice's House
+// console.log(next.parcels);  // → []
+// console.log(first.place);   // → Post Office
+
+//Simulation
+// function runRobot(state, robot, memory) {
+//   for (let turn = 0;; turn++) {
+//     if (state.parcels.length == 0) {
+//       console.log(`Done in ${turn} turns`);
+//       break;
+//     }
+//     let action = robot(state, memory);
+//     state = state.move(action.direction);
+//     memory = action.memory;
+//     console.log(`Moved to ${action.direction}`);
+//   }
+// }
+
+//Random Robot
+// function randomPick(array) {
+//   let choice = Math.floor(Math.random() * array.length);
+//   return array[choice];
+// }
+// function randomRobot(state) {
+//   return {direction: randomPick(roadGraph[state.place])};
+// }
+
+//Static method to create a new state with some parcels. (written here by directly adding a property to the constructor)
+// VillageState.random = function(parcelCount = 5) {
+//   let parcels = [];
+//   for (let i = 0; i < parcelCount; i++) {
+//     let address = randomPick(Object.keys(roadGraph));
+//     let place;
+//     do {
+//       place = randomPick(Object.keys(roadGraph));
+//   } while (place == address);                         //We don’t want any parcels that are sent from the same place that they are addressed to
+//     parcels.push({place, address});
+//   }
+//   return new VillageState("Post Office", parcels);
+// };
+//
+// //First Virtual World
+// runRobot(VillageState.random(), randomRobot);
+// // → Moved to Marketplace
+// // → Moved to Town Hall
+// // → …
+// // → Done in 63 turns
+
+//Need to figure out how to integrate animatevillage.js to make this run.
+//runRobotAnimation(VillageState.random(), randomRobot);
+
+//The mail truck’s route: If we find a route that passes all places in the village, the robot could run that route twice, at which point it is guaranteed to be done. Here is one such route (starting from the post office):
+// const mailRoute = [
+//   "Alice's House", "Cabin", "Alice's House", "Bob's House",
+//   "Town Hall", "Daria's House", "Ernie's House",
+//   "Grete's House", "Shop", "Grete's House", "Farm",
+//   "Marketplace", "Post Office"
+// ];
+// function routeRobot(state, memory) {
+//   if (memory.length == 0) {
+//     memory = mailRoute;
+//   }
+//   return {direction: memory[0], memory: memory.slice(1)};
+// }
+// runRobot(VillageState.random(), routeRobot, []);
+// //runRobotAnimation(VillageState.random(), routeRobot, []);
+
+//Pathfinding
+/*
+we are mostly interested in the shortest route.
+So we want to make sure we look at short routes before we look at longer ones.
+A good approach would be to “grow” routes from the starting point, exploring every reachable place that hasn’t been visited yet, until a route reaches the goal
+*/
+// function findRoute(graph, from, to) {
+//   let work = [{at: from, route: []}];
+//   for (let i = 0; i < work.length; i++) {
+//     let {at, route} = work[i];
+//     for (let place of graph[at]) {
+//       if (place == to) return route.concat(place);
+//       if (!work.some(w => w.at == place)) {
+//         work.push({at: place, route: route.concat(place)});
+//       }
+//     }
+//   }
+// }
+// function goalOrientedRobot({place, parcels}, route) {
+//   if (route.length == 0) {
+//     let parcel = parcels[0];
+//     if (parcel.place != place) {
+//       route = findRoute(roadGraph, place, parcel.place);
+//     } else {
+//       route = findRoute(roadGraph, place, parcel.address);
+//     }
+//   }
+//   return {direction: route[0], memory: route.slice(1)};
+// }
+// runRobot(VillageState.random(),goalOrientedRobot, []);
+// //runRobotAnimation(VillageState.random(),goalOrientedRobot, []);
+
+
+
+/*
+EXERCISE #19        Measuring a robot
+Write a function compareRobots that takes two robots (and their starting memory).
+It should generate 100 tasks and let each of the robots solve each of these tasks.
+When done, it should output the average number of steps each robot took per task
+*/
+// function runRobot(state, robot, memory) {
+//   for (let turn = 0;; turn++) {
+//     if (state.parcels.length == 0) return turn;
+//     let action = robot(state, memory);
+//     state = state.move(action.direction);
+//     memory = action.memory;
+//   }
+// }
+// function compareRobots(robot1, memory1, robot2, memory2) {
+//   let avgStepsR1 = 0, avgStepsR2 = 0;
+//
+// //	runRobot(VillageState.random(), randomRobot);
+//   for(let i = 0; i<99; i++){
+//     let task = VillageState.random();
+// 	avgStepsR1 += runRobot(task, robot1, []);
+// 	avgStepsR2 += runRobot(task, robot2, []);
+//   }
+//   console.log(`the average of steps of ${robot1.name} was ${avgStepsR1/100}`);
+//   console.log(`the average of steps of ${robot2.name} was ${avgStepsR2/100}`);
+// }
+// compareRobots(routeRobot, [], goalOrientedRobot, []);       //the average of steps of routeRobot was 17.97
+//                                                             //the average of steps of goalOrientedRobot was 15.07
+
+/*
+EXERCISE #20        Robot efficiency
+Can you write a robot that finishes the delivery task faster than goalOrientedRobot?
+If you observe that robot’s behavior, what obviously stupid things does it do? How could those be improved?
+If you solved the previous exercise, you might want to use your compareRobots function to verify whether you improved the robot.
+*/
+// function lazyRobot({place, parcels}, route) {
+//   if (route.length == 0) {
+//     // Describe a route for every parcel
+//     let routes = parcels.map(parcel => {
+//       if (parcel.place != place) {
+//         return {route: findRoute(roadGraph, place, parcel.place),
+//                 pickUp: true};
+//       } else {
+//         return {route: findRoute(roadGraph, place, parcel.address),
+//                 pickUp: false};
+//       }
+//     });
+//     // This determines the precedence a route gets when choosing.
+//     // Route length counts negatively, routes that pick up a package
+//     // get a small bonus.
+//     function score({route, pickUp}) {
+//       return (pickUp ? 0.5 : 0) - route.length;
+//     }
+//     route = routes.reduce((a, b) => score(a) > score(b) ? a : b).route;
+//   }
+//
+//   return {direction: route[0], memory: route.slice(1)};
+// }
+//
+// //runRobotAnimation(VillageState.random(), lazyRobot, []);
+// compareRobots(lazyRobot, [], goalOrientedRobot, []);       //the average of steps of routeRobot was 17.97
+
+/*
+EXERCISE #21        Persistent Group
+Write a new class PGroup, similar to the Group class from Chapter 6, which stores a set of values. Like Group, it has add, delete, and has methods
+Its add method, however, should return a new PGroup instance with the given member added and leave the old one unchanged. Similarly, delete creates a new instance without a given member.
+The class should work for values of any type, not just strings. It does not have to be efficient when used with large amounts of values.
+The constructor shouldn’t be part of the class’s interface (though you’ll definitely want to use it internally). Instead, there is an empty instance, PGroup.empty, that can be used as a starting value.
+Why do you need only one PGroup.empty value, rather than having a function that creates a new, empty map every time?
+ANSWER: You need only one empty instance because all empty groups are the same and instances of the class don’t change. You can create many different groups from that single empty group without affecting it.
+*/
+// class PGroup {
+//   constructor(members) {
+//     this.members = members;
+//   }
+//   add(value) {
+//     if (this.has(value)) return this;
+//     return new PGroup(this.members.concat([value]));
+//   }
+//   delete(value) {
+//     if (!this.has(value)) return this;
+//     return new PGroup(this.members.filter(m => m !== value));
+//   }
+//   has(value) {
+//     return this.members.includes(value);
+//   }
+// }
+// PGroup.empty = new PGroup([]);
+//
+// let a = PGroup.empty.add("a");
+// let ab = a.add("b");
+// let b = ab.delete("a");
+// console.log(b.has("b"));    // → true
+// console.log(a.has("b"));    // → false
+// console.log(b.has("a"));    // → false
