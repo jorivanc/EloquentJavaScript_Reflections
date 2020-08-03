@@ -282,7 +282,7 @@ reduce:         array.reduce(reducerFunction, intialValue);   returns a single o
                 let studentsObj = students.reduce(function(acc,person){
                 return {...acc, [person.userid]: person}
             },{});
-            ------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
 The Secret Life Of objects
 This:
@@ -409,10 +409,68 @@ Inheritance:
     }
 
 instanceOf:     let you know if an object is derived from a specific class. i.e console.log([1] instanceof Array);      // → true
+------------------------------------------------------------------------------------------------------------------------
 
+Bugs and Errors
+
+strict mode: converts syntactic mistakes into errors such as counter=3; will throw a ReferenceError: counter is not defined (will not allow you to create global variables without being defined previously)
+            prevents modifying non writable properties in an object. prevents trying to write on a getter property
+            doesnt allow same names as function parameters (usually is an error) function sum(a,a,b){...}
+            Another change in strict mode is that the this binding holds the value undefined in functions that are not called as methods.
+            When making such a call outside of strict mode, this refers to the global scope object, which is an object whose properties are the global bindings
+put at the top of a file or a function body, "use strict";
+
+Types: often errors are due to being confused about the type of parameters or function return values so it may help making comments.
+    // (VillageState, Array) → {direction: string, memory: Array}
+    function goalOrientedRobot(state, memory) {
+      // ...
+    }
+another alternative for making javascript check for types is typescript.
+
+Exceptions:
+Exceptions are a mechanism that makes it possible for code that runs into a problem to raise (or throw) an exception.
+    function look() {
+      if (prompt("Which way?") == "left") {
+        return "a house";
+      } else {
+          throw new Error("Invalid direction: " + result);          //  'throw' is used to raise an exception.
+      }
+    }
+
+    try {                                                           // 'try - catch' used to catch exceptions: Other options try-finally  try-catch-finally
+      console.log("You see", look());
+    } catch (error) {
+      console.log("Something went wrong: " + error);                //printing or checking error.stack will help to debug the problem
+  }finally{
+  console.log("this will run either theres an exception or not ");
+}
+
+Selective Catching:
+Define a new type of error and use instanceof to identify it.
+    class InputError extends Error {}                           //creates a new/costumized type of error
+    function promptDirection(question) {
+        let result = prompt(question);
+        if (result.toLowerCase() == "left") return "L";
+        if (result.toLowerCase() == "right") return "R";
+        throw new InputError("Invalid direction: " + result);
+    }
+    try {...
+    } catch (e) {
+        if (e instanceof InputError) {                          //select the new type of error
+        console.log("Not a valid direction. Try again.");
+    } else {                                                    //if something other "unexpected" error occurred then let it be automatically handled
+            throw e;
+            }
+        }
+
+Assertions: are checks inside a program that verify that something is the way it is supposed to be. They are used not to handle situations that can come up in normal operation but to find programmer mistakes.
+You want to reserve assertions for mistakes that are easy to make (or that you find yourself making). programmed warnings !
+
+
+------------------------------------------------------------------------------------------------------------------------
 SEARCH
     - difference between for-in (loop over properties names in Objects or "0" , "1", ... in arrays) / for-of (loop over values) mostly used for arrays. the object is expected to be 'iterable'
-    - DEBUGGING javascript
+    - DEBUGGING and TESTING javascript (Jasmine, Mocha)
     - interfaces javascript
     - .reduce function Javascript
     - destructuring
