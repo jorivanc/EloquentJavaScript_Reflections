@@ -663,6 +663,87 @@ From https://www.smashingmagazine.com/2019/02/regexp-features-regular-expression
 (?<= exp) construct for lookbehind. (match a pattern only if it is preceded by exp)             i.e.    console.log(/(?<=€)\d+(\.\d*)?/.exec('€199'));
 (?<! exp) negative version of lookbehind.   i.e.  /(?<!\d{3}) meters/.test();   //matches the word “meters” if three digits do not come before it
 (?<name> exp)   naming groups   /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/.exec('2020-03-04');     //property .groups: {year: "2020", month: "03", day: "04"}
+------------------------------------------------------------------------------------------------------------------------
+
+Modules (https://www.youtube.com/watch?v=qJWALEoGge4 different approaches to create modules)
+A module is a piece of program that specifies which other pieces it relies on and which functionality it provides for other modules to use (its interface).
+The relations between modules are called "dependencies".
+
+Packages
+A package is a chunk of code that can be distributed (copied and installed). It may contain one or more modules and has information about which other packages it depends on. A package also usually comes with documentation explaining what it does so that people who didn’t write it might still be able to use it
+NPM is two things: an online service where one can download (and upload) packages and a program (bundled with Node.js) that helps you install and manage them
+
+Improvised Modules: This style of modules provides isolation, to a certain degree, but it does not declare dependencies. Instead, it just puts its interface into the global scope and expects its dependencies, if any, to do the same
+    const weekDay = function() {
+    const names = ["Sunday", "Monday", "Tuesday", "Wednesday",
+                 "Thursday", "Friday", "Saturday"];
+    return {
+        name(number) { return names[number]; },
+        number(name) { return names.indexOf(name); }
+        };
+    }();
+    console.log(weekDay.name(weekDay.number("Sunday")));    //  Sunday
+
+Evaluating data as code
+eval(string);    will execute a string in the current scope ( usually a bad idea because it breaks some of the properties that scopes normally have)
+    const x = 1;
+    function evalAndReturnX(code) {
+        eval(code);
+        return x;
+        }
+    console.log(evalAndReturnX("var x = 2"));   // → 2
+    console.log(x);                             // → 1
+Function("arg1,arg2...", "function body");      less scary way of interpreting data as code is to use the Function constructor. (It wraps the code in a function value so that it gets its own scope and won’t do odd things with other scopes)
+    let plusOne = Function("n", "return n + 1;");
+    console.log(plusOne(4));    // → 5
+
+CommonJS Modules:   - is the system used by most packages on NPM.)
+                    - not supported by default by browsers consequently not optimal for asynchronous (unless use a module bundler as WebPack)
+                    - loaded synchronously
+                    - born with server-side JavaScript (not suitable for client-side)
+The main concept in CommonJS modules is a function called 'require'. When you call this with the module name of a dependency, it makes sure the module is loaded and returns its interface.
+
+    exports.func1 = function(){...}
+    exports.func2 = (param1) => {...};
+
+                    OR
+
+    module.exports = {          //MODULE FILE use exports for the variables/functions that you want to expose.
+        func1,
+        func2
+    }
+    const {func1, func2} = require("./functions");              //using destructuring now we can call them individually
+    func1();
+    func2();
+
+    const FunctionsModule = require("./functions");                   //now they need to be called using dot notation
+    FunctionsModule.func1();
+    FunctionsModule.func2();
+
+ES (ECMAScript) Modules:    - support asynch
+                            - Instead of calling a function ('require' in CommonJS) to access a dependency, you use a special 'import' keyword
+                            - The 'export' keyword is used to export things. It may appear in front of a function, class, or binding definition (let, const, or var)
+                            - When there is a binding named 'default', it is treated as the module’s main exported value.
+                            - ES module imports happen before a module’s script starts running. That means import declarations may not appear inside functions or blocks, and the names of dependencies must be quoted strings, not arbitrary expressions
+    export function func1(){...}
+    export function func2(){...}
+    or at the end of file
+    export { func1, func2 }
+
+    import * as FunctionsModule from './functions';     //returns an object with everything that has been exported
+    FunctionsModule.func1();
+    FunctionsModule.func2();
+
+    import { func1 } from './functions';                    //to import something specific. ("name import" NOT to be confused with destructuring)
+    import { func2 as newFunc } from './functions';         //its possible to rename importing bindings using the keyword 'as'.
+
+    export default mainFunc(){...}      //
+    import mainFunc from './functions';                     //will import the default export by default. (you can use another name instead of mainFunc)
+    import mainFunc, { func1 as newFunc1, func2 } from './functions';   //to import from modules with mixed (dafault and no default) exports
+    <script type='module' src='functions.js'></script>      //on the html document add the module with type='module' in order to make it work the html file needs to be served from a server (terminal$ http-server functions) and then open the html file on the browser
+
+
+
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -674,6 +755,8 @@ SEARCH
     - destructuring
     - new javascrip class (is a just function?)
     - Objects private variables (using # still in proposal?)
+    - defer in asynch? in modules, WebPack modules bundler
+    - babel to map new javascript features into old format JavaScript
 
 Notes:
 
