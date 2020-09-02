@@ -245,7 +245,7 @@ JSON JavaScript Object Notation (property names have to be surrounded by "" and 
 let string = JSON.stringify({squirrel: false,
                             events: ["weekend"]});      creates a string with valid JSON
 console.log(string);                                    // {"squirrel":false,"events":["weekend"]}
-console.log(JSON.parse(string).events);                 // ["weekend"]                                  returns as an object or array
+console.log(JSON.parse(string).events);                 // ["weekend"]          parse, constructs the JavaScript value or object described by the string
 ------------------------------------------------------------------------------------------------------------------------
 
 Higher Order Functions
@@ -349,7 +349,7 @@ using NEW in front of a function will treat the function as a constructor (This 
     };
     let weirdRabbit = new Rabbit("weird");
 
-Map: (use for-of to return an array [key, value]) some methods of map: get(key), has(key), set(key,value), delete(key)
+Map: (use for-of to return an array [key, value]) some methods of map: get(key), has(key), set(key,value), delete(key). Object.keys doesnt work on Maps (It has a keys method, but that returns an iterator rather than an array. An iterator (or iterable value) can be converted to an array with the Array.from function.)
 is dangerous using objects as maps i.e let objMap = { pedro: 35}; be careful because ("toString" in objMap) == true
 posible solutions:
 - create an object without a prototype:     let newObj = Object.create(null)
@@ -741,22 +741,247 @@ ES (ECMAScript) Modules:    - support asynch
     import mainFunc from './functions';                     //will import the default export by default. (you can use another name instead of mainFunc)
     import mainFunc, { func1 as newFunc1, func2 } from './functions';   //to import from modules with mixed (dafault and no default) exports
     <script type='module' src='functions.js'></script>      //on the html document add the module with type='module' in order to make it work the html file needs to be served from a server (terminal$ http-server functions) and then open the html file on the browser
+------------------------------------------------------------------------------------------------------------------------
+
+Asynchronous Programming
+In a synchronous programming model, things happen one at a time (a function waits (stops the program) for another one to finish and so on)
+An asynchronous model allows multiple things to happen at the same time.
+
+Callbacks
+A function that perform a slow action take an extra argument, a callback function. The action is started, and when it finishes, the callback function is called with the result
+Nesting many asynchronous functions inside callbacks is known as the pyramid of doom or the callback hell:
+    asyncFunction(param1, function(){
+        asyncFunction(param1,function(){
+            asyncFunction(param1,function(){
+                asyncFunction(param1,function(){
+                    asyncFunction(param1,function(){
+                        ....
+                    });
+                });
+            });
+        });
+    });
+Failure with callbacks: A widely used convention is that the first argument to the callback is used to indicate that the action failed, and the second contains the value produced by the action when it was successful.
+
+Promises
+A promise is an object representing the eventual completion or failure of an asynchronous operation
+The easiest way to create a promise is by calling Promise.resolve
+    let fifteen = Promise.resolve(15);
+    fifteen.then(value => console.log(`Got ${value}`));         // → Got 15
+Standard Promise used
+    let promise = new Promise(function(resolve, reject) {
+        resolve("done");
+        reject(new Error("…"));
+    });
+The most fundamental .then
+    promise.then(                                                               promise.then(
+      function(result) { handle a successful result  },             or              result => alert(result),
+      function(error) {  handle an error  }                                         error => alert(error)
+    );                                                                          );
+Using .catch    [ using only promise.catch(f) is the same as promise.then(null, f)]
+Using .finally  [promise.finally(function) runs when the promise is settled, doesn't matter successfully or not ]
+    new Promise((resolve, reject) => {
+        setTimeout(() => resolve("result"), 2000)
+    })
+    .finally(() => alert("Promise ready"))          // <-- runs no matter what
+    .then(result => alert(result))                  // <-- .then handles the result
+    .catch(err => alert(err));                      // <-- .catch handles the error object
 
 
+General Use of  Promise fetching an url
+    function getData(method, url) {
+        return new Promise(function(resolve, reject) {              // Return a new promise.
+            var req = new XMLHttpRequest();                         // Do the usual XHR stuff
+            req.open(method, url);
+            req.onload = function() {                               // This is called even on 404 etc
+                if (this.status >= 200 && this.status < 300) {                            // so check the status
+                    resolve(req.response);                          // Resolve the promise with the response text
+                }
+                else {
+                    // one way to handle the rejection error: reject(Error(req.statusText));                  // Otherwise reject with the status text, which will hopefully be a meaningful error
+                    reject({
+                    status: this.status,
+                    statusText: req.statusText
+                    });
+                }
+            };
+            req.onerror = function() {                              // Handle network errors
+                // one way to handle the rejection error: reject(Error("Network Error"));
+                reject({
+                    status: this.status,
+                    statusText: req.statusText
+                });
+            };
+            req.send();                                             // Make the request
+        });
+    }
+Now let's use it:
+    getData('GET','jsonplaceholder.typicode.com/todos')
+        .then(function(data) {
+                    // simple answer displaying all the data:       console.log("Success!", data);
+                    let todos = JSON.parse(data);
+                    let output = '';
+                    for(let todo of todos){
+                                                                // in an html file create a <ul id="template">  </ul>
+                        output += `
+                            <li>
+                                <h3> ${todo.title}</h3>
+                                <p> Completed: ${todo.completed}</p>
+                            </li>
+                        `;
+                    }
+                    getElementById('template').innerHTML = output;
+                }
+                //optional if there is not .catch       // , function(error) {
+                                                        //    console.error("Failed!", error);
+                                                        // }
+        ).catch(function(error){
+            console.log(error);
+    })
+Chaining .then's
+    get('story.json').then(function(response) {
+        return JSON.parse(response);
+    }).then(function(response) {
+        console.log("Yey JSON!", response);
+    })
 
+Using Fetch to fetch an URL (Fetch uses promises):
+    function status(response) {
+      if (response.status >= 200 && response.status < 300) {
+        return Promise.resolve(response)
+      } else {
+        return Promise.reject(new Error(response.statusText))
+      }
+    }
+    function json(response) {
+      return response.json()
+    }
+    fetch('users.json')                                         // now we actually do the request and manipulate the returned promise
+      .then(status)                                             //call just the name of the function, by default the parameter will be the response
+      .then(json)
+      .then(function(data) {
+        console.log('Request succeeded with JSON response', data);
+      }).catch(function(error) {
+        console.log('Request failed', error);
+      });
 
+To do something after ALL promises have resolved:    Promise.all([promise1,promise2,promise3..]).then(function(){ console.log("ALL promises have finished");});     resolves to an array of the values that these promises produced (in the same order as the original array)
+To do something after ONE promise has resolved:      Promise.race([promise1,promise2,promise3..]).then(function(){ console.log("ONE promise has finished");});
+
+Network Flooding:   For broadcasting information to the whole network, one solution is to set up a type of request that is automatically forwarded to neighbors. These neighbors then in turn forward it to their neighbors, until the whole network has received the message.
+
+Async-Await
+Async:  The word “async” before a function means one simple thing: a function always returns a promise. Other values are wrapped in a resolved promise automatically
+i.e 1   async function f(){
+            return "something";
+        }
+        f().then(alert);    // something
+i.e 2   async function wait() {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return 10;
+        }
+        function f() {
+            wait().then(result => alert(result));             // shows 10 after 1 second
+        }
+        f();
+Await:  The keyword await makes JavaScript wait until that promise settles and returns its result.
+        Await only works inside an Async function. including an async iife i.e (async ()=>{  let response = await fetch('https://api.github.com/users/${"jorge castano"}`)})();
+    async function f() {
+        let promise = new Promise((resolve, reject) => {
+            setTimeout(() => resolve("done!"), 1000)
+        });
+        let result = await promise;                             // wait until the promise resolves (*)
+        alert(result);                                          // "done!"
+    }
+    f();
+Await Error handling: In the case of a rejection, await throws the error, just as if there were a throw statement at that line.
+    async function f() {                                            async function f() {
+      await Promise.reject(new Error("Whoops!"));       =               throw new Error("Whoops!");
+  }                                                                 }
+We can catch that error using try..catch, the same way as a regular throw:
+    async function f() {
+      try {
+        let response = await fetch('/no-user-here');
+        let user = await response.json();
+      } catch(err) {                                    // catches errors both in fetch and response.json
+            alert(err);
+        }
+    }
+    f();
+If we don’t have try..catch, then the promise generated by the call of the async function f() (in the above example) becomes rejected. We can append .catch to handle it:
+    async function f() {
+      let response = await fetch('http://no-such-url');
+    }                                                  // f() becomes a rejected promise
+    f().catch(alert);                                  // TypeError: failed to fetch
+
+Generators:     Is a function (proceded with an asterisc *) that can stop midway and then continue from where it stopped.
+                Creates an object that is iterable (cannot be instatiated directly)
+                iterable.next() = {value: actualValue, done: trueOrFalse}
+i.e 1   function* generateSequence() {
+            let variable1 = yield 1;
+            console.log(variable1);                                     //   2. two way
+            let variable2 = yield "P";
+            console.log(variable2);                                     //   4. 5
+            return 3;
+        }
+        let generator = generateSequence();
+        let one = generator.next("ignored");        //The first call generator.next() should be always made without an argument (the argument is ignored if passed)
+        alert(JSON.stringify(one));                                     //   1. {"value":1,"done":false}
+        console.log(generator.next("two way").value);                   //   3. P
+        generator.next(5);
+i.e 2 creating iterables with generator
+        const myIterable = {
+            *[Symbol.iterator]() {
+                yield 1;
+                yield 2;
+                yield 3;
+            }
+        }
+        for (let value of myIterable) {
+            console.log(value);
+        }                                       // 1     // 2     // 3
+        or
+        [...myIterable];                        // [1, 2, 3]
+i.e 3
+        Group.prototype[Symbol.iterator] = function*() {
+            for (let i = 0; i < this.members.length; i++) {
+                yield this.members[i];
+            }
+        };
+
+libraries to use generator:     (https://www.youtube.com/watch?v=QO07THdLWQo)
+    bluebird:  best for Client / Browser side.
+    co:        NodeJS / back / server side.
+    q:         Angular
+i.e. using co
+        const fetchJson = co.wrap(function * (url) {
+            try {
+                let request = yield fetch(url);
+                let text = yield request.text();
+                return JSON.parse(text);
+            }
+            catch (error) {
+                console.log(`ERROR: ${error.stack}`);
+            }
+        });
+
+The Event Loop
+    JS Engine/Call Stack -> Web API -> Callback queue -> JS Engine/Call Stack -> ...
+    JS Engine/Call Stack:   Stores the functions to be executed.
+    Web Api:                Hosting environment (Browser or NodeJS) threads
+    Callback queue:         Sends the callback function to be executed back to the JS Engine/Call Stack.
 
 ------------------------------------------------------------------------------------------------------------------------
 SEARCH
     - difference between for-in (loop over properties names in Objects or "0" , "1", ... in arrays) / for-of (loop over values) mostly used for arrays. the object is expected to be 'iterable' / forEach for Arrays (method executes a provided function once for each array element) expects a synchronous function,does not wait for promises.
-    - DEBUGGING and TESTING javascript (Jasmine, Mocha)
+    - DEBUGGING and TESTING javascript (JASMINE, MOCHA)
     - interfaces javascript
     - .reduce function Javascript
     - destructuring
     - new javascrip class (is a just function?)
     - Objects private variables (using # still in proposal?)
-    - defer in asynch? in modules, WebPack modules bundler
-    - babel to map new javascript features into old format JavaScript
+    - defer vs ...... WEBPACK modules bundler
+    - BABEL to map new javascript features into old format JavaScript
 
 Notes:
 
